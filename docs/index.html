@@ -1,1 +1,232 @@
-<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>4MD Bahia</title><body style="font-family:system-ui;padding:2rem"><h1>4MD Bahia / Salvador</h1><p>Em construção: projeções de MMGD e payback com o modelo 4MD da EPE.</p></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4MD Bahia e Salvador</title>
+<meta name="description" content="Projeções de micro e minigeração distribuída (modelo 4MD/EPE) para a Bahia e Salvador e análise de payback sob a Lei 14.300.">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d2329;--muted:#5f6b76;--card:#fff;--line:#e3e0d8;--acc:#d9822b;--acc2:#2a6f97;}
+@media (prefers-color-scheme:dark){:root{--bg:#14181c;--fg:#e8eaec;--muted:#9aa5ae;--card:#1c2228;--line:#2c343c;--acc:#f0a050;--acc2:#6fb3d9;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:2.2rem 16px 1rem;max-width:1100px;margin:auto}
+header h1{margin:0 0 .3rem;font-size:clamp(1.5rem,3.5vw,2.2rem)}
+header p{margin:0;color:var(--muted);max-width:760px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav div{max-width:1100px;margin:auto;padding:0 16px;display:flex;gap:.25rem;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:.75rem .7rem;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--fg);border-color:var(--acc)}
+main{max-width:1100px;margin:auto;padding:1.2rem 16px 3rem}
+section{display:none}section.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;margin:1rem 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem}
+.kpi b{display:block;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem;margin:1rem 0}
+.chart{width:100%;height:420px}
+label{font-size:.9rem;color:var(--muted);margin-right:.4rem}
+select{font:inherit;padding:.3rem .5rem;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;font-variant-numeric:tabular-nums}
+th,td{padding:.4rem .5rem;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.note{color:var(--muted);font-size:.9rem}
+a{color:var(--acc2)}
+ul.dl li{margin:.35rem 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Micro e minigeração distribuída na Bahia e em Salvador</h1>
+  <p>Projeções feitas com o modelo <a href="https://epe-gov-br.github.io/epe4md/">4MD da EPE</a>, recortadas para a Bahia (área da Coelba) e para Salvador, comparando cenários de regras de compensação (Lei 14.300/2022) e o payback de quem instala painéis solares.</p>
+</header>
+<nav><div id="tabs"></div></nav>
+<main>
+  <section id="geral">
+    <div class="kpis" id="kpis"></div>
+    <div class="card"><div id="g_geral" class="chart"></div></div>
+    <p class="note">Ano base dos dados: <span id="anobase"></span>. Valores a partir do ano seguinte são projeções do modelo.</p>
+  </section>
+
+  <section id="payback">
+    <div class="card">
+      <label>Segmento</label><select id="sel_seg"></select>
+      <label style="margin-left:1rem">Métrica</label>
+      <select id="sel_met"><option value="payback">Payback simples (anos)</option><option value="payback_desc">Payback descontado (anos)</option><option value="tir_real">TIR real (% a.a.)</option></select>
+      <div id="g_payback" class="chart"></div>
+      <p class="note">Payback de 25 anos significa que o sistema não se paga dentro da vida útil.</p>
+    </div>
+    <div class="card scroll"><h3>Payback simples por cenário (anos)</h3><div id="t_payback"></div></div>
+  </section>
+
+  <section id="bahia">
+    <div class="card">
+      <label>Indicador</label>
+      <select id="sel_ind"><option value="potencia_acum_mw">Potência acumulada (MW)</option><option value="adotantes_acum">Adotantes acumulados</option><option value="adotantes_ano">Novos adotantes no ano</option><option value="potencia_ano_mw">Potência adicionada no ano (MW)</option><option value="geracao_gwh">Geração no ano (GWh)</option></select>
+      <div id="g_bahia" class="chart"></div>
+    </div>
+    <div class="card"><h3>Por segmento – cenário Lei 14.300 (padrão EPE)</h3><div id="g_seg" class="chart"></div></div>
+  </section>
+
+  <section id="salvador">
+    <div class="card"><h3>Histórico: Salvador × resto da Bahia (base ANEEL)</h3><div id="g_hist" class="chart"></div></div>
+    <div class="card">
+      <label>Indicador</label>
+      <select id="sel_ind_ssa"><option value="potencia_acum_mw">Potência acumulada (MW)</option><option value="adotantes_acum">Adotantes acumulados</option><option value="adotantes_ano">Novos adotantes no ano</option><option value="geracao_gwh">Geração no ano (GWh)</option></select>
+      <div id="g_ssa" class="chart"></div>
+      <p class="note">Estimativa: projeção da Bahia × participação de Salvador por segmento (2023–2025). A base da ANEEL registra o município da usina; geração remota instalada fora da capital e que abate contas em Salvador não entra na fatia da cidade.</p>
+    </div>
+    <div class="card scroll"><h3>Participação de Salvador na Bahia (2023–2025)</h3><div id="t_part"></div></div>
+  </section>
+
+  <section id="consumo">
+    <div class="card">
+      <label>Indicador</label>
+      <select id="sel_cons"><option value="part_geracao_consumo">Geração MMGD / energia distribuída (%)</option><option value="penetracao">Penetração: adotantes / unidades consumidoras (%)</option></select>
+      <div id="g_cons" class="chart"></div>
+      <p class="note" id="cons_nota"></p>
+    </div>
+  </section>
+
+  <section id="sensib">
+    <div class="card">
+      <label>Segmento</label><select id="sel_seg2"></select>
+      <div id="g_sens" class="chart"></div>
+      <p class="note">Cenário Lei 14.300 (padrão EPE). Variação da taxa de desconto nominal usada no payback descontado.</p>
+    </div>
+  </section>
+
+  <section id="metodo">
+    <div class="card">
+      <h3>Cenários regulatórios</h3>
+      <table><tr><th>Cenário</th><th style="text-align:left">O que muda</th></tr>
+      <tr><td>1 – Regra antiga</td><td style="text-align:left">Compensa todas as componentes da tarifa (como antes da Lei 14.300).</td></tr>
+      <tr><td>2 – Lei 14.300 (padrão EPE)</td><td style="text-align:left">Paga o Fio B de forma escalonada: 15% em 2023 até 100% em 2029.</td></tr>
+      <tr><td>3 – Fio B integral</td><td style="text-align:left">Paga 100% do Fio B desde 2023, sem escalonamento.</td></tr>
+      <tr><td>4 – Pós-2029 com encargos</td><td style="text-align:left">A partir de 2029 paga Fio B + TUSD Transmissão + TUSD Encargos.</td></tr>
+      <tr><td>5 – Pós-2029 binômia</td><td style="text-align:left">Lei 14.300 + tarifa binômia na baixa tensão a partir de 2029.</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Como foi feito</h3>
+      <ol>
+        <li>Modelo 4MD (pacote R <code>epe4md</code> 0.1.5, premissas EPE de 2025) rodado para o Brasil, com resultados filtrados para a Bahia (distribuidora Coelba).</li>
+        <li>Payback e TIR calculados com o fluxo de caixa do próprio modelo para cada segmento e ano de instalação na área da Coelba.</li>
+        <li>Salvador estimada pela participação da cidade nos sistemas conectados na Bahia em 2023–2025, por segmento (base de dados abertos da ANEEL).</li>
+      </ol>
+      <p>Código completo e instruções para reproduzir: <a href="https://github.com/tarcioee/epe4md-bahia">github.com/tarcioee/epe4md-bahia</a>.</p>
+    </div>
+  </section>
+
+  <section id="docs">
+    <div class="card">
+      <h3>Documentos e dados</h3>
+      <ul class="dl">
+        <li><a href="artigo.pdf">Mini-artigo (PDF)</a> · <a href="artigo.html">versão web</a></li>
+        <li><a href="relatorio.html">Relatório do que foi feito</a></li>
+        <li><a href="resultados_cenarios.xlsx">Planilha com todos os resultados (Excel)</a></li>
+        <li><a href="data.json">Dados brutos do site (JSON)</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script>
+const TABS=[["geral","Visão geral"],["payback","Payback"],["bahia","Projeção Bahia"],["salvador","Salvador"],["consumo","Consumo"],["sensib","Sensibilidade"],["metodo","Método"],["docs","Documentos"]];
+const NOMES={"1_regra_antiga":"1 – Regra antiga","2_lei14300_padrao":"2 – Lei 14.300 (padrão)","3_fioB_integral":"3 – Fio B integral","4_pos2029_encargos":"4 – Pós-2029 encargos","5_pos2029_binomia":"5 – Pós-2029 binômia"};
+const SEGS={"residencial":"Residencial (local)","residencial_remoto":"Residencial remoto","comercial_bt":"Comercial BT (local)","comercial_at":"Comercial AT (local)","comercial_at_remoto":"Comercial AT remoto"};
+const CORES=["#7a8794","#d9822b","#b23a48","#2a6f97","#3c9d5d","#8e5ea2"];
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt=(n,d=0)=>n==null?"–":Number(n).toLocaleString("pt-BR",{maximumFractionDigits:d,minimumFractionDigits:d});
+let D;
+
+function layout(y,extra={}){return Object.assign({margin:{l:60,r:16,t:16,b:40},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+ font:{color:css("--fg"),family:"system-ui"},xaxis:{gridcolor:css("--line")},yaxis:{title:y,gridcolor:css("--line"),rangemode:"tozero"},
+ legend:{orientation:"h",y:-0.18},hovermode:"x unified"},extra)}
+const CFG={displaylogo:false,responsive:true,locale:"pt-BR"};
+const cenarios=()=>[...new Set(D.payback.map(r=>r.cenario))];
+
+function linhas(rows,campo,mult=1){return cenarios().map((c,i)=>{const r=rows.filter(x=>x.cenario===c);
+ return{x:r.map(x=>x.ano),y:r.map(x=>x[campo]*mult),name:NOMES[c]||c,mode:"lines+markers",line:{color:CORES[i],width:c==="2_lei14300_padrao"?3.5:2},marker:{size:4}}})}
+
+function geral(){
+ const p=D.projecao_ba.filter(r=>r.cenario==="2_lei14300_padrao");
+ const ult=p[p.length-1], base=p.find(r=>r.ano===D.ano_base);
+ const pr=D.payback.filter(r=>r.cenario==="2_lei14300_padrao"&&r.segmento==="residencial");
+ const pb=a=>(pr.find(r=>r.ano===a)||{}).payback;
+ const s=D.projecao_salvador?D.projecao_salvador.filter(r=>r.cenario==="2_lei14300_padrao"):null;
+ document.getElementById("kpis").innerHTML=[
+  [fmt(base.potencia_acum_mw/1000,2)+" GW","Potência instalada na BA em "+D.ano_base],
+  [fmt(ult.potencia_acum_mw/1000,2)+" GW","Projeção BA em "+D.ano_final+" (Lei 14.300)"],
+  s?[fmt(s[s.length-1].potencia_acum_mw,0)+" MW","Estimativa Salvador em "+D.ano_final]:null,
+  [fmt(pb(D.ano_base+1),1)+" anos","Payback residencial em "+(D.ano_base+1)]
+ ].filter(Boolean).map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("");
+ Plotly.newPlot("g_geral",linhas(D.projecao_ba,"potencia_acum_mw",1/1000),layout("Potência acumulada na Bahia (GW)",{shapes:[vline()]}),CFG);
+}
+function vline(){return{type:"line",x0:D.ano_base+.5,x1:D.ano_base+.5,yref:"paper",y0:0,y1:1,line:{dash:"dot",color:css("--muted")}}}
+
+function payback(){
+ const seg=sel_seg.value, met=sel_met.value, mult=met==="tir_real"?100:1;
+ const rows=D.payback.filter(r=>r.segmento===seg);
+ Plotly.react("g_payback",linhas(rows,met,mult),layout(sel_met.selectedOptions[0].text),CFG);
+}
+function tabelaPayback(){
+ const segs=["residencial","comercial_bt","comercial_at","residencial_remoto"], cs=cenarios();
+ const anos=[...new Set(D.payback.map(r=>r.ano))].filter(a=>a>=2022);
+ let h="";
+ segs.forEach(sg=>{h+=`<h4>${SEGS[sg]}</h4><table><tr><th>Ano</th>${cs.map(c=>`<th>${NOMES[c]}</th>`).join("")}</tr>`;
+  anos.forEach(a=>{h+=`<tr><td>${a}</td>${cs.map(c=>{const r=D.payback.find(x=>x.cenario===c&&x.segmento===sg&&x.ano===a);return`<td>${r?fmt(r.payback,1):"–"}</td>`}).join("")}</tr>`});h+="</table>"});
+ t_payback.innerHTML=h;
+}
+function bahia(){Plotly.react("g_bahia",linhas(D.projecao_ba,sel_ind.value),layout(sel_ind.selectedOptions[0].text,{shapes:[vline()]}),CFG)}
+function segmentos(){
+ const r=D.projecao_ba_segmento.filter(x=>x.cenario==="2_lei14300_padrao");
+ const segs=[...new Set(r.map(x=>x.segmento))];
+ const tr=segs.map((s,i)=>{const z=r.filter(x=>x.segmento===s);return{x:z.map(x=>x.ano),y:z.map(x=>x.potencia_mw),name:SEGS[s]||s,type:"bar",marker:{color:CORES[i%CORES.length]}}});
+ Plotly.newPlot("g_seg",tr,layout("Potência adicionada no ano (MW)",{barmode:"stack",shapes:[vline()]}),CFG);
+}
+function salvador(){
+ if(!D.historico_salvador){document.getElementById("salvador").innerHTML="<p>Dados de Salvador indisponíveis.</p>";return}
+ const h=D.historico_salvador.filter(r=>r.ano>=2013&&r.ano<=D.ano_base);
+ const tr=["Salvador","Resto da BA"].map((l,i)=>{const z=h.filter(r=>r.local===l);return{x:z.map(r=>r.ano),y:z.map(r=>r.pot_mw),name:l,type:"bar",marker:{color:i?css("--line"):CORES[1]}}});
+ Plotly.newPlot("g_hist",tr,layout("Potência conectada no ano (MW)",{barmode:"stack"}),CFG);
+ ssa();
+ t_part.innerHTML=`<table><tr><th>Segmento</th><th>Adotantes BA</th><th>Adotantes SSA</th><th>% adotantes</th><th>MW BA</th><th>MW SSA</th><th>% potência</th></tr>`+
+  D.participacao_salvador.map(r=>`<tr><td>${SEGS[r.segmento]||r.segmento}</td><td>${fmt(r.ucs_ba)}</td><td>${fmt(r.ucs_ssa)}</td><td>${fmt(r.part_adotantes*100,1)}%</td><td>${fmt(r.pot_mw_ba,1)}</td><td>${fmt(r.pot_mw_ssa,1)}</td><td>${fmt(r.part_potencia*100,1)}%</td></tr>`).join("")+"</table>";
+}
+function ssa(){Plotly.react("g_ssa",linhas(D.projecao_salvador,sel_ind_ssa.value),layout(sel_ind_ssa.selectedOptions[0].text,{shapes:[vline()]}),CFG)}
+function consumo(){
+ if(!D.consumo){document.getElementById("consumo").innerHTML="<p>Dados de consumo indisponíveis.</p>";return}
+ cons_nota.textContent=D.consumo_nota||"";
+ Plotly.react("g_cons",linhas(D.consumo,sel_cons.value,100),layout(sel_cons.selectedOptions[0].text,{shapes:[vline()]}),CFG);
+}
+function sens(){
+ const r=D.sensibilidade.filter(x=>x.segmento===sel_seg2.value);
+ const txs=[...new Set(r.map(x=>x.taxa_desconto))];
+ const tr=txs.map((t,i)=>{const z=r.filter(x=>x.taxa_desconto===t);return{x:z.map(x=>x.ano),y:z.map(x=>x.payback_desc),name:fmt(t*100)+"% a.a.",mode:"lines+markers",line:{color:CORES[i]}}});
+ Plotly.react("g_sens",tr,layout("Payback descontado (anos)"),CFG);
+}
+
+function tabs(){
+ const t=document.getElementById("tabs");
+ t.innerHTML=TABS.map(([id,n])=>`<button data-id="${id}">${n}</button>`).join("");
+ const show=id=>{document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));
+  t.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===id));
+  document.querySelectorAll("#"+id+" .js-plotly-plot").forEach(g=>Plotly.Plots.resize(g));
+  history.replaceState(null,"","#"+id)};
+ t.onclick=e=>{if(e.target.dataset.id)show(e.target.dataset.id)};
+ show(TABS.some(x=>x[0]===location.hash.slice(1))?location.hash.slice(1):"geral");
+}
+
+fetch("data.json").then(r=>r.json()).then(d=>{
+ D=d; anobase.textContent=D.ano_base;
+ const segs=[...new Set(D.payback.map(r=>r.segmento))];
+ [sel_seg,sel_seg2].forEach(s=>{s.innerHTML=segs.map(x=>`<option value="${x}">${SEGS[x]||x}</option>`).join("");s.value="residencial"});
+ geral();payback();tabelaPayback();bahia();segmentos();salvador();consumo();sens();
+ sel_seg.onchange=sel_met.onchange=payback;sel_cons.onchange=consumo;sel_ind.onchange=bahia;sel_ind_ssa.onchange=ssa;sel_seg2.onchange=sens;
+ tabs();
+}).catch(e=>{document.querySelector("main").innerHTML="<p>Erro ao carregar dados: "+e+"</p>"});
+</script>
+</body>
+</html>

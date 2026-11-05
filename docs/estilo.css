@@ -1,0 +1,13 @@
+:root{--bg:#fbfaf7;--fg:#1d2329;--muted:#5f6b76;--line:#e3e0d8;--acc:#2a6f97}
+@media (prefers-color-scheme:dark){:root{--bg:#14181c;--fg:#e8eaec;--muted:#9aa5ae;--line:#2c343c;--acc:#6fb3d9}}
+html{background:var(--bg)}
+body{max-width:820px;margin:auto;padding:2rem 16px 4rem;background:var(--bg);color:var(--fg);font:17px/1.65 Georgia,"Times New Roman",serif}
+h1,h2,h3,header .title{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.25}
+header{margin-bottom:2rem}header .title{font-size:1.7rem}
+header .author,header .date{color:var(--muted);margin:.2rem 0}
+img{max-width:100%;height:auto;background:#fff;border-radius:6px}
+figure{margin:1.5rem 0}figcaption{font-size:.9rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;display:block;overflow-x:auto}
+th,td{padding:.4rem .6rem;border-bottom:1px solid var(--line)}
+a{color:var(--acc)}code{font-size:.9em}
+.voltar{font-family:system-ui,sans-serif;font-size:.9rem}

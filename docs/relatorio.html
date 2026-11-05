@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.13" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Relatório: modelo 4MD aplicado à Bahia e a Salvador</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="estilo.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Relatório: modelo 4MD aplicado à Bahia e a
+Salvador</h1>
+<p class="date">5 de novembro de 2026</p>
+</header>
+<p><a href="index.html" class="voltar">← Voltar ao site</a></p>
+<h2 id="resumo">Resumo</h2>
+<p>Pegamos o modelo 4MD da EPE, que projeta a micro e minigeração
+distribuída (MMGD) no Brasil, e o aplicamos à <strong>Bahia</strong> e a
+<strong>Salvador</strong>. Em seguida, comparamos <strong>5 cenários de
+regras de compensação</strong> (Lei 14.300) para ver quando ainda vale a
+pena instalar painéis solares (<em>payback</em>) e quanto a MMGD
+representa do consumo do estado. Tudo está automatizado em scripts R,
+publicado neste site e acompanhado de um mini-artigo de iniciação
+científica.</p>
+<h2 id="o-que-foi-pedido-áudio">O que foi pedido (áudio)</h2>
+<ol type="1">
+<li>Rodar o 4MD em escala menor que a nacional: <strong>estado da
+Bahia</strong> e <strong>cidade de Salvador</strong>.</li>
+<li>Ligar o modelo às <strong>mudanças de regulação da MMGD</strong>
+para entender <strong>em que situação vale a pena instalar</strong>
+painéis fotovoltaicos (<em>payback</em>) e a questão do
+<strong>consumo</strong>.</li>
+</ol>
+<h2 id="o-que-foi-feito">O que foi feito</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Como</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instalação</td>
+<td>R 4.6.2 + pacote <code>epe4md</code> 0.1.5 (EPE) +
+<code>arrow</code>, <code>tidyverse</code></td>
+<td>Modelo rodando localmente</td>
+</tr>
+<tr>
+<td>Recorte Bahia</td>
+<td>Resultados nacionais filtrados por UF (BA = distribuidora
+Coelba)</td>
+<td>Projeção anual por segmento até 2035</td>
+</tr>
+<tr>
+<td>Recorte Salvador</td>
+<td>Base de dados abertos da ANEEL (município de cada usina): histórico
+real até 2025 + participação da cidade (2023–2025) aplicada à
+projeção</td>
+<td>Estimativa anual até 2035</td>
+</tr>
+<tr>
+<td>Cenários regulatórios</td>
+<td>5 versões da tabela <code>premissas_reg</code> (regra antiga, Lei
+14.300, Fio B integral, pós-2029 com encargos, pós-2029 binômia)</td>
+<td>Projeções e <em>payback</em> por cenário</td>
+</tr>
+<tr>
+<td><em>Payback</em> e TIR</td>
+<td>Fluxo de caixa do próprio modelo, por segmento e ano, na Coelba</td>
+<td><em>Payback</em> simples, descontado e TIR real</td>
+</tr>
+<tr>
+<td>Sensibilidade</td>
+<td>Taxa de desconto de 8% a 20% a.a.</td>
+<td>Robustez do <em>payback</em></td>
+</tr>
+<tr>
+<td>Consumo</td>
+<td>Geração MMGD × energia distribuída pela Coelba (24.641 GWh em 2024)
+e adotantes × unidades consumidoras</td>
+<td>Participação no consumo e penetração</td>
+</tr>
+<tr>
+<td>Entregáveis</td>
+<td>Site interativo, planilha Excel, mini-artigo (PDF/HTML), código no
+GitHub</td>
+<td>Este site</td>
+</tr>
+</tbody>
+</table>
+<h2 id="principais-resultados">Principais resultados</h2>
+<ul>
+<li><strong>Ainda vale a pena instalar.</strong> Pelas premissas da EPE,
+o <em>payback</em> residencial na Coelba fica entre <strong>1,7 e 3,4
+anos em 2030</strong>, conforme o cenário. A Lei 14.300 acrescenta cerca
+de meio ano. A tarifa binômia na baixa tensão (cenário 5) seria a regra
+mais pesada.</li>
+<li><strong>Segmento mais afetado:</strong> geração <strong>remota
+comercial em alta tensão</strong>, que deixa de se pagar com as regras
+novas (era ~8 anos na regra antiga).</li>
+<li><strong>Bahia:</strong> 2,60 GW e 507 mil adotantes em 2025. Em
+2035, <strong>4,24 GW</strong> na Lei 14.300, contra 4,52 GW na regra
+antiga (−6%) e 4,04 GW com tarifa binômia (−11%).</li>
+<li><strong>Consumo:</strong> a MMGD gerou cerca de <strong>14%</strong>
+da energia distribuída na Bahia em 2025 e chega a
+<strong>18–20%</strong> em 2035. A penetração vai de 10,7% para ~15% das
+unidades consumidoras.</li>
+<li><strong>Salvador:</strong> 4,3% dos adotantes e 5,1% da potência da
+Bahia (2023–2025). Tinha <strong>151 MW</strong> em 2025 e chega a
+<strong>~247 MW</strong> em 2035 (de 238 a 260 MW, conforme o
+cenário).</li>
+</ul>
+<h2 id="pontos-de-atenção-limitações">Pontos de atenção
+(limitações)</h2>
+<ol type="1">
+<li><strong>Queda brusca em 2026 em todos os cenários.</strong> O modelo
+considera que o mercado potencial da geração remota residencial e do
+comercial em baixa tensão na Bahia já se esgotou com o boom de
+2022–2025. É um efeito do modelo, não da regulação, e vale discutir com
+o orientador.</li>
+<li><strong><em>Payback</em> baixo.</strong> ~2 anos é menos que os 3–5
+anos que o mercado costuma citar. As premissas nacionais (custo R$
+2,84/Wp, fator de capacidade 17%) podem ser otimistas para a Bahia.</li>
+<li><strong>Cenário “Fio B integral” com mais adoção que a Lei
+14.300.</strong> Provável efeito da calibração da curva S com o
+histórico.</li>
+<li><strong>Salvador é estimativa.</strong> A ANEEL registra o município
+da usina, então a geração remota no interior que abate contas em
+Salvador não entra.</li>
+<li><strong>Consumo de referência</strong> vem do relatório da Coelba,
+não da EPE.</li>
+</ol>
+<h2 id="arquivos">Arquivos</h2>
+<ul>
+<li><strong>Site interativo:</strong> <a
+href="index.html">index.html</a></li>
+<li><strong>Mini-artigo:</strong> <a href="artigo.pdf">PDF</a> · <a
+href="artigo.html">HTML</a> (o autor e o orientador estão como
+<code>[Nome do Autor]</code> e <code>[Orientador(a)]</code>, para
+preencher)</li>
+<li><strong>Planilha completa:</strong> <a
+href="resultados_cenarios.xlsx">resultados_cenarios.xlsx</a></li>
+<li><strong>Código:</strong> <a
+href="https://github.com/tarcioee/epe4md-bahia"
+class="uri">https://github.com/tarcioee/epe4md-bahia</a>
+<ul>
+<li><code>fatia_salvador.R</code>: participação de Salvador (ANEEL)</li>
+<li><code>cenarios_bahia.R</code>: cenários, <em>payback</em>,
+sensibilidade, projeções e exportação</li>
+<li><code>consumo_bahia.R</code>: MMGD × consumo e penetração</li>
+<li><code>figuras_artigo.R</code>: figuras do artigo</li>
+</ul></li>
+</ul>
+<h2 id="como-mudar-algo-e-rodar-de-novo">Como mudar algo e rodar de
+novo</h2>
+<ol type="1">
+<li>Edite a seção <strong>CONFIGURAÇÃO</strong> em
+<code>cenarios_bahia.R</code> (ano, cenários, parâmetros).</li>
+<li>Rode <code>Rscript cenarios_bahia.R</code>, depois
+<code>Rscript consumo_bahia.R</code> e
+<code>Rscript figuras_artigo.R</code> (~8 minutos ao todo).</li>
+<li>Para outra cidade, troque <code>municipio</code> em
+<code>fatia_salvador.R</code>.</li>
+</ol>
+<h2 id="próximos-passos-sugeridos">Próximos passos sugeridos</h2>
+<ul>
+<li>Calibrar custo, irradiação e autoconsumo com dados da Bahia e
+comparar o <em>payback</em> com o de instaladores locais.</li>
+<li>Tratar a geração compartilhada separadamente no mercado
+potencial.</li>
+<li>Testar outros parâmetros do modelo: baterias
+(<code>simula_bateria = TRUE</code>), incentivos
+(<code>desconto_capex_local</code>) e filtros de renda.</li>
+</ul>
+</body>
+</html>
